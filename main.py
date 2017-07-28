@@ -5,6 +5,7 @@ import time
 
 
 currency=['DINIW','aud','eur','gbp','cad','jpy','chf','nzd','sgd','dkk','hkd','nok','sek','try','zar','cnh','czk','huf','pln','rub','thb','mxn']
+weight={'uer':0.576, 'jpy':0.136, 'gbp':0.119,'cad':0.091,'chf':0.036, 'sek':0.042}
 
 def request_data(): 
     urlstr=''
@@ -28,22 +29,21 @@ def request_data():
                 resp[currency[0]]=hq.split(',')[1:-1]   
 
         result={}
+
         for it in currency[1:]:
             result[it]=round(100*float(resp[it][-5])/float(resp[it][4]),4)
         tem=currency[0]
         xx=lambda x,y:round(100*(x-y)/y,4)
         dxy=xx(float(resp[tem][1]), float(resp[tem][2]))
-        result[tem]=dxy
-
+        result[tem]=round(dxy,4)
         for it in currency[1:]:
-            result[it]=-result[it]+result[currency[0]]
+            result[it]=-result[it]+result[currency[0]]*(1.0 if not weight.get(it) else (1.0-weight[it]))
 
         sortresult=sorted(result.items(),key=lambda t:t[1],reverse=True)
 
-        sortresult=sortresult[0:3]+sortresult[-3:]
-        sortresult=[(currency[0], result[currency[0]])] + sortresult
+        sortresult=sortresult[0:8]+[(currency[0], result[currency[0]])]+sortresult[-8:]
+
         print('data processing complete!')
-        print(sortresult)
         return sortresult
 
         # print(resp)  #-5  / 4 
@@ -55,18 +55,16 @@ def request_data():
 
 if __name__ == '__main__':
     data=[]
-    itchat.auto_login()
-    flist=itchat.get_friends()
-    for f in flist:
-        if f['NickName'] == '请思君':
-            wchatUser=f['UserName']
-    print(wchatUser)
+    itchat.auto_login(enableCmdQR=2)    
+    account = ['请思君','开心果','猴哥','EAMiracle01','EAMiracle02']    
+    # print(wchatUser)
     while True:
         data.append(request_data())
         msg=str(data[-1])[1:-1] 
         msg=msg.replace('), ', ')\n')
-        itchat.send(msg,wchatUser)
-
+        print(msg)
+        for ic in account:
+            itchat.send(msg,itchat.search_friends(ic)[0]['UserName'])
         time.sleep(900)
         pass
     

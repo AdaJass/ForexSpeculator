@@ -14,6 +14,7 @@ def request_data():
     urlstr=urlstr[:-1]    
     url='http://hq.sinajs.cn/rn=dd2i1&list=DINIW,'+urlstr
     # print(url)
+    # round=lambda x,y:float(('%.'+str(y)+'f') % x)
     request=urllib.request.Request(url)  
     result=urllib.request.urlopen(request, timeout=25)
     if result.code == 200 or 204:
@@ -31,13 +32,15 @@ def request_data():
         result={}
 
         for it in currency[1:]:
-            result[it]=round(100*float(resp[it][-5])/float(resp[it][4]),4)
+            result[it]=100*float(resp[it][-5])/float(resp[it][4])
         tem=currency[0]
-        xx=lambda x,y:round(100*(x-y)/y,4)
+        xx=lambda x,y:100*(x-y)/y
         dxy=xx(float(resp[tem][1]), float(resp[tem][2]))
-        result[tem]=round(dxy,4)
+        result[tem]=round(dxy,5)
+
         for it in currency[1:]:
-            result[it]=-result[it]+result[currency[0]]*(1.0 if not weight.get(it) else (1.0-weight[it]))
+            ressss=-result[it]+result[tem]*(1.0 if not weight.get(it) else (1.0-weight[it]))
+            result[it]=round(ressss,4)
 
         sortresult=sorted(result.items(),key=lambda t:t[1],reverse=True)
 
@@ -55,7 +58,7 @@ def request_data():
 
 if __name__ == '__main__':
     data=[]
-    itchat.auto_login(enableCmdQR=2)    
+    itchat.auto_login(hotReload=True, statusStorageDir='itchat.pkl',enableCmdQR=2,picDir='./QRcode')
     account = ['请思君','开心果','猴哥','EAMiracle01','EAMiracle02']    
     # print(wchatUser)
     while True:
